@@ -34,44 +34,49 @@
       </div>
     </form>
   </div>
-  <script>
-  document.getElementById('regForm').addEventListener('submit', async function(e) {
+ <script>
+  document.getElementById('registrationForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const f = e.target;
 
-    const payload = {
-      username: f[0].value.trim(),
-      password: f[1].value,
-      full_name: f[2].value.trim(),
-      cnic: f[3].value.trim(),
-      contact: f[4].value.trim(),
-      guardian_name: f[5].value.trim(),
-      guardian_contact: f[6].value.trim(),
-      guardian_cnic: f[7].value.trim(),
-      village: f[8].value.trim(),
-      institution: f[9].value.trim(),
-      fee_paid: f[10].value || 0,
-      total_fee: f[11] ? f[11].value || 0 : 0
-    };
+    const f = e.target;
+    const username = f[0].value.trim();
+    const password = f[1].value;
+    const fullName = f[2].value.trim();
+    const roomNo = f[3].value.trim();
+    const fees = f[4].value.trim();
+    const startDate = f[5].value;
+    const endDate = f[6].value;
+    const guardianName = f[7].value.trim();
+    const guardianContact = f[8].value.trim();
 
     try {
-      const res = await fetch(API_BASE + '/register', {
+      const res = await fetch(API_BASE + '/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          username,
+          password,
+          fullName,
+          roomNo,
+          fees,
+          startDate,
+          endDate,
+          guardianName,
+          guardianContact
+        })
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Registration failed');
+      if (!res.ok) throw new Error(data.message || 'Registration failed');
 
-      alert('Account created — welcome ' + payload.full_name);
-      localStorage.setItem('username', payload.username);
-      location.href = 'student-dashboard.html';
+      alert('✅ Registration successful! Please log in.');
+      location.href = 'login.html';
     } catch (err) {
       alert('Error: ' + err.message);
     }
   });
 </script>
+
 
 </body>
 </html>
