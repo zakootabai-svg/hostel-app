@@ -1,33 +1,94 @@
+<<<<<<< HEAD
 <script>
   document.getElementById('regForm').addEventListener('submit', async function(e) {
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Al Fizaa Girls Hostel - Registration</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="form-container">
+    <h2>🏠 Al Fizaa Girls Hostel</h2>
+    <p class="subtitle">✨ Student Registration Form ✨</p>
+    <form class="form" id="regForm">
+      <input type="text" placeholder="👤 Username *" required />
+      <input type="password" placeholder="🔒 Password *" required />
+      <input type="text" placeholder="📛 Full Name *" required />
+      <input type="text" placeholder="🆔 Your B-form/CNIC No (13 digit)" required />
+      <input type="text" placeholder="📞 Your Contact (+92300123456)" required />
+      <input type="text" placeholder="👨 Guardian Name *" required />
+      <input type="text" placeholder="📞 Guardian Contact (+9230012)" required />
+      <input type="text" placeholder="🆔 Guardian CNIC (13 digits) *" required />
+      <input type="text" placeholder="🏡 Village *" required />
+      <input type="text" placeholder="🏫 Current Institution Name *" />
+      <input type="number" placeholder="💵 Fee Paid (PKR) *" required />
+      <input type="number" placeholder="💵 Total Fee (PKR)" />
+      <label>Start Date</label><input type="date" />
+      <label>End Date</label><input type="date" />
+      <textarea placeholder="💊 Medical issues (if any)"></textarea>
+      <input type="text" placeholder="✍ Enter Your Name for Digital Signature" />
+      <div class="btn-group">
+        <button type="submit" class="btn create">Create Account</button>
+        <button type="button" class="btn back" onclick="location.href='login.html'">Back to Login</button>
+      </div>
+    </form>
+  </div>
+ <script>
+  document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+>>>>>>> a5bba26f58b83320867d7d15ba6bbc6419af3086
     e.preventDefault();
 
     const f = e.target;
     const username = f[0].value.trim();
     const password = f[1].value;
+<<<<<<< HEAD
     const full_name = f[2].value.trim();
     const cnic = f[3].value.trim();
     const contact = f[4].value.trim();
     const guardian_name = f[5].value.trim();
     const guardian_contact = f[6].value.trim();
+=======
+    const fullName = f[2].value.trim();
+    const roomNo = f[3].value.trim();
+    const fees = f[4].value.trim();
+    const startDate = f[5].value;
+    const endDate = f[6].value;
+    const guardianName = f[7].value.trim();
+    const guardianContact = f[8].value.trim();
+>>>>>>> a5bba26f58b83320867d7d15ba6bbc6419af3086
 
     try {
-      const res = await fetch(API_BASE + '/register', {
+      const res = await fetch(API_BASE + '/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username,
           password,
+<<<<<<< HEAD
           full_name,
           cnic,
           contact,
           guardian_name,
           guardian_contact
+=======
+          fullName,
+          roomNo,
+          fees,
+          startDate,
+          endDate,
+          guardianName,
+          guardianContact
+>>>>>>> a5bba26f58b83320867d7d15ba6bbc6419af3086
         })
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Registration failed');
+      if (!res.ok) throw new Error(data.message || 'Registration failed');
 
       alert('✅ Registration successful! Please log in.');
       location.href = 'login.html';
@@ -36,3 +97,10 @@
     }
   });
 </script>
+<<<<<<< HEAD
+=======
+
+
+</body>
+</html>
+>>>>>>> a5bba26f58b83320867d7d15ba6bbc6419af3086
