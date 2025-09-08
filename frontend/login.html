@@ -27,19 +27,13 @@
       const password = f[1].value;
 
       try {
-        const res = await fetch(API_BASE + '/login', {
+        const res = await fetch(API_BASE + '/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
         });
 
         const data = await res.json();
-<<<<<<< HEAD
-        if (!res.ok) throw new Error(data.error || 'Login failed');
-
-        localStorage.setItem('username', data.user.username);
-        alert('Login successful! Welcome ' + (data.user.full_name || username));
-=======
         if (!res.ok) throw new Error(data.message || 'Login failed');
 
         // Save token + username in localStorage
@@ -47,7 +41,6 @@
         localStorage.setItem('username', data.user.username);
 
         alert('Login successful! Welcome ' + (data.user.fullName || username));
->>>>>>> a5bba26f58b83320867d7d15ba6bbc6419af3086
         location.href = 'student-dashboard.html';
       } catch (err) {
         alert('Error: ' + err.message);
