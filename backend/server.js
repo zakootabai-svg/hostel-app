@@ -1,83 +1,106 @@
+// server.js
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
+const jwt = require("jsonwebtoken");
 const pool = require("./db");
+require("dotenv").config();
 
-dotenv.config();
 const app = express();
-
-app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
+app.use(cors());
 app.use(express.json());
 
-// ----------------------
-// Register new student
-// ----------------------
-app.post("/api/register", async (req, res) => {
-  const { username, password, fullName, email } = req.body;
-  try {
-    const [existing] = await pool.query("SELECT * FROM students WHERE username = ?", [username]);
-    if (existing.length > 0) {
-      return res.status(400).json({ message: "Username already exists" });
-    }
-
-    await pool.query(
-      "INSERT INTO students (username, password, full_name, email) VALUES (?, ?, ?, ?)",
-      [username, password, fullName, email]
-    );
-
-    res.json({ message: "Registration successful" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Database error" });
-  }
+// ✅ Health check
+app.get("/", (req, res) => {
+  res.send("✅ Backend is running");
 });
 
-// ----------------------
-// Login student
-// ----------------------
+// ==================== LOGIN ====================
 app.post("/api/login", async (req, res) => {
-  const { username, password } = req.body;
   try {
-    const [rows] = await pool.query("SELECT * FROM students WHERE username = ? AND password = ?", [
-      username,
-      password,
-    ]);
+    const { username, password } = req.body;
+
+    const [rows] = await pool.query(
+      "SELECT * FROM users WHERE username = ? AND password = ?",
+      [username, password]
+    );
+
     if (rows.length === 0) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const user = rows[0];
+    const token = jwt.sign(
+      { username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+    );
+
     res.json({
-      message: "Login successful",
+      token,
       user: {
         username: user.username,
-        full_name: user.full_name,
-        email: user.email,
-      },
+        fullName: user.full_name
+      }
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Database error" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// ----------------------
-// Get student details
-// ----------------------
-app.get("/api/students/:username", async (req, res) => {
+// ==================== REGISTER ====================
+app.post("/api/register", async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT id, username, full_name, email FROM students WHERE username = ?",
-      [req.params.username]
+    const { username, password, full_name, email, room_number, start_date, end_date, fee } = req.body;
+
+    await pool.query(
+      "INSERT INTO users (username, password, full_name, email, room_number, start_date, end_date, fee) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [username, password, full_name, email, room_number, start_date, end_date, fee]
     );
-    if (rows.length === 0) return res.status(404).json({ error: "Student not found" });
+
+    res.json({ message: "Student registered successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Registration failed" });
+  }
+});
+
+// ==================== VERIFY TOKEN MIDDLEWARE ====================
+function verifyToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader) return res.status(401).json({ error: "No token provided" });
+
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(403).json({ error: "Invalid token" });
+    req.user = decoded;
+    next();
+  });
+}
+
+// ==================== STUDENT DASHBOARD ROUTE ====================
+app.get("/api/students/:username", verifyToken, async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const [rows] = await pool.query(
+      "SELECT username, full_name, email, room_number, start_date, end_date, fee FROM users WHERE username = ?",
+      [username]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: "Database error" });
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch student data" });
   }
 });
 
+// ==================== START SERVER ====================
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
