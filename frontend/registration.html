@@ -25,37 +25,71 @@
   </div>
 
   <script>
+   <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Student Registration - Al Fizaa Girls Hostel</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="form-container">
+    <form class="form register-form" id="registerForm">
+      <input type="text" placeholder="Enter Username" required />
+      <input type="password" placeholder="Enter Password" required />
+      <input type="text" placeholder="Full Name" required />
+      <input type="number" placeholder="Room Number" required />
+      <input type="number" placeholder="Fees" required />
+      <label>Start Date</label>
+      <input type="date" required />
+      <label>End Date</label>
+      <input type="date" required />
+      <input type="text" placeholder="Guardian Name" required />
+      <input type="text" placeholder="Contact Number" required />
+
+      <button type="submit" class="btn create">✨ Create Account</button>
+      <button type="button" class="btn back" onclick="location.href='login.html'">⬅️ Back to Login</button>
+    </form>
+  </div>
+
+  <script>
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-
-      const student = {
-        username: document.getElementById('username').value.trim(),
-        password: document.getElementById('password').value,
-        full_name: document.getElementById('fullName').value,
-        room_number: document.getElementById('roomNumber').value,
-        fees: document.getElementById('fees').value,
-        start_date: document.getElementById('startDate').value,
-        end_date: document.getElementById('endDate').value,
-        guardian_name: document.getElementById('guardianName').value,
-        guardian_contact: document.getElementById('guardianContact').value
+      const f = e.target;
+      const payload = {
+        username: f[0].value.trim(),
+        password: f[1].value,
+        fullName: f[2].value.trim(),
+        roomNumber: f[3].value,
+        fees: f[4].value,
+        startDate: f[5].value,
+        endDate: f[6].value,
+        guardianName: f[7].value.trim(),
+        contact: f[8].value.trim()
       };
 
       try {
-        const res = await fetch(API_BASE + '/api/register', {
+        const res = await fetch(API_BASE + '/register', {   // ✅ fixed here
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(student)
+          body: JSON.stringify(payload)
         });
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Registration failed');
 
-        alert('Account created successfully! Please login.');
-        location.href = 'login.html'; // ✅ redirect to login
+        alert('Registration successful! Please login.');
+        location.href = 'login.html';
       } catch (err) {
         alert('Error: ' + err.message);
       }
     });
+  </script>
+</body>
+</html>
+
   </script>
 </body>
 </html>

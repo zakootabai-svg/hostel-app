@@ -20,7 +20,7 @@
   </div>
 
   <script>
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const f = e.target;
       const username = f[0].value.trim();
@@ -46,6 +46,7 @@
         alert('Error: ' + err.message);
       }
     });
+
   </script>
 </body>
 </html>
