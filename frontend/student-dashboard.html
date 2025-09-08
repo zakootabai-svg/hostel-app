@@ -1,47 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Student Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard - Al Fizaa Girls Hostel</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="config.js"></script>
 </head>
 <body>
   <div class="dashboard">
-    <h1>🎓 Student Dashboard</h1>
-    <div id="student-info">Loading...</div>
+    <h1>Welcome, <span id="studentName">Student</span> 🎓</h1>
+    <p><strong>Username:</strong> <span id="username"></span></p>
+    <p><strong>Email:</strong> <span id="email"></span></p>
+    <p><strong>Room:</strong> <span id="room"></span></p>
+    <p><strong>Start Date:</strong> <span id="startDate"></span></p>
+    <p><strong>End Date:</strong> <span id="endDate"></span></p>
+    <p><strong>Fee:</strong> <span id="fee"></span></p>
+
     <button onclick="logout()">🚪 Logout</button>
   </div>
 
   <script>
-    if (!localStorage.getItem('username')) {
-      window.location.href = 'login.html';
-    }
+    async function loadDashboard() {
+      const username = localStorage.getItem("username");
+      const token = localStorage.getItem("token");
 
-    async function loadStudent() {
-      const username = localStorage.getItem('username');
+      if (!username || !token) {
+        alert("Please login first!");
+        location.href = "login.html";
+        return;
+      }
+
       try {
-        const res = await fetch(`${API_BASE}/api/students/${username}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to fetch student");
+        const res = await fetch(`${API_BASE}/students/${username}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
 
-        document.getElementById("student-info").innerHTML = `
-          <p><b>Name:</b> ${data.full_name}</p>
-          <p><b>Username:</b> ${data.username}</p>
-          <p><b>Email:</b> ${data.email}</p>
-        `;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load student data");
+
+        // Populate student details
+        document.getElementById("studentName").textContent = data.full_name || username;
+        document.getElementById("username").textContent = data.username;
+        document.getElementById("email").textContent = data.email || "N/A";
+        document.getElementById("room").textContent = data.room_number || "N/A";
+        document.getElementById("startDate").textContent = data.start_date || "N/A";
+        document.getElementById("endDate").textContent = data.end_date || "N/A";
+        document.getElementById("fee").textContent = data.fee || "N/A";
       } catch (err) {
-        document.getElementById("student-info").innerText = "❌ " + err.message;
+        alert("Error: " + err.message);
+        console.error(err);
       }
     }
 
     function logout() {
       localStorage.clear();
-      window.location.href = "login.html";
+      location.href = "login.html";
     }
 
-    loadStudent();
+    // Load student data on page load
+    loadDashboard();
   </script>
 </body>
 </html>
