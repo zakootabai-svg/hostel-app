@@ -35,38 +35,43 @@
     </form>
   </div>
   <script>
-    document.getElementById('regForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const f = e.target;
-      const payload = {
-        username: f[0].value.trim(),
-        password: f[1].value,
-        fullName: f[2].value.trim(),
-        cnic: f[3].value.trim(),
-        contact: f[4].value.trim(),
-        guardianName: f[5].value.trim(),
-        guardianContact: f[6].value.trim(),
-        guardianCnic: f[7].value.trim(),
-        village: f[8].value.trim(),
-        institution: f[9].value.trim(),
-        feePaid: f[10].value || 0,
-        totalFee: f[11] ? f[11].value || 0 : 0
-      };
-      try {
-        const res = await fetch(API_BASE + '/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Registration failed');
-        localStorage.setItem('token', data.token);
-        alert('Account created — you are now logged in.');
-        location.href = 'student-dashboard.html';
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
-    });
-  </script>
+  document.getElementById('regForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const f = e.target;
+
+    const payload = {
+      username: f[0].value.trim(),
+      password: f[1].value,
+      full_name: f[2].value.trim(),
+      cnic: f[3].value.trim(),
+      contact: f[4].value.trim(),
+      guardian_name: f[5].value.trim(),
+      guardian_contact: f[6].value.trim(),
+      guardian_cnic: f[7].value.trim(),
+      village: f[8].value.trim(),
+      institution: f[9].value.trim(),
+      fee_paid: f[10].value || 0,
+      total_fee: f[11] ? f[11].value || 0 : 0
+    };
+
+    try {
+      const res = await fetch(API_BASE + '/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Registration failed');
+
+      alert('Account created — welcome ' + payload.full_name);
+      localStorage.setItem('username', payload.username);
+      location.href = 'student-dashboard.html';
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  });
+</script>
+
 </body>
 </html>
