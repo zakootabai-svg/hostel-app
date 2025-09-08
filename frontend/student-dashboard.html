@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="dashboard">
+    <h1>🎓 Student Dashboard</h1>
+    <div id="student-info">Loading...</div>
+    <button onclick="logout()">🚪 Logout</button>
+  </div>
+
+  <script>
+    if (!localStorage.getItem('username')) {
+      window.location.href = 'login.html';
+    }
+
+    async function loadStudent() {
+      const username = localStorage.getItem('username');
+      try {
+        const res = await fetch(`${API_BASE}/api/students/${username}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to fetch student");
+
+        document.getElementById("student-info").innerHTML = `
+          <p><b>Name:</b> ${data.full_name}</p>
+          <p><b>Username:</b> ${data.username}</p>
+          <p><b>Email:</b> ${data.email}</p>
+        `;
+      } catch (err) {
+        document.getElementById("student-info").innerText = "❌ " + err.message;
+      }
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    loadStudent();
+  </script>
+</body>
+</html>

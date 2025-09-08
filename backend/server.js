@@ -1,90 +1,82 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const pool = require("./db"); // mysql2/promise pool
+const pool = require("./db");
 
 dotenv.config();
-
 const app = express();
 
-// ✅ Middleware
+app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json());
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:5500",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  })
-);
 
-// --- Health check ---
-app.get("/", (req, res) => {
-  res.send("✅ Backend is running");
-});
-
-// --- DB check ---
-app.get("/db-check", async (req, res) => {
-  try {
-    const [rows] = await pool.query("SELECT 1+1 AS result");
-    res.json({ db: "connected", result: rows[0].result });
-  } catch (err) {
-    res.status(500).json({ db: "error", error: err.message });
-  }
-});
-
-// --- Register ---
+// ----------------------
+// Register new student
+// ----------------------
 app.post("/api/register", async (req, res) => {
+  const { username, password, fullName, email } = req.body;
   try {
-    const { username, password, full_name } = req.body;
-
-    if (!username || !password || !full_name) {
-      return res.status(400).json({ error: "Missing fields" });
+    const [existing] = await pool.query("SELECT * FROM students WHERE username = ?", [username]);
+    if (existing.length > 0) {
+      return res.status(400).json({ message: "Username already exists" });
     }
 
-    const [result] = await pool.query(
-      "INSERT INTO users (username, password_hash, full_name) VALUES (?, ?, ?)",
-      [username, password, full_name]
+    await pool.query(
+      "INSERT INTO students (username, password, full_name, email) VALUES (?, ?, ?, ?)",
+      [username, password, fullName, email]
     );
 
-    res.json({ success: true, userId: result.insertId });
+    res.json({ message: "Registration successful" });
   } catch (err) {
-    console.error("❌ Registration error:", err);
-    res.status(500).json({ error: "Registration failed" });
+    console.error(err);
+    res.status(500).json({ message: "Database error" });
   }
 });
 
-// --- Login ---
+// ----------------------
+// Login student
+// ----------------------
 app.post("/api/login", async (req, res) => {
+  const { username, password } = req.body;
   try {
-    const { username, password } = req.body;
-
-    const [rows] = await pool.query(
-      "SELECT * FROM users WHERE username = ? AND password_hash = ?",
-      [username, password]
-    );
-
+    const [rows] = await pool.query("SELECT * FROM students WHERE username = ? AND password = ?", [
+      username,
+      password,
+    ]);
     if (rows.length === 0) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    res.json({ success: true, user: rows[0] });
+    const user = rows[0];
+    res.json({
+      message: "Login successful",
+      user: {
+        username: user.username,
+        full_name: user.full_name,
+        email: user.email,
+      },
+    });
   } catch (err) {
-    console.error("❌ Login error:", err);
-    res.status(500).json({ error: "Login failed" });
+    console.error(err);
+    res.status(500).json({ message: "Database error" });
   }
 });
 
-// --- Fetch students ---
-app.get("/api/students", async (req, res) => {
+// ----------------------
+// Get student details
+// ----------------------
+app.get("/api/students/:username", async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM users");
-    res.json(rows);
+    const [rows] = await pool.query(
+      "SELECT id, username, full_name, email FROM students WHERE username = ?",
+      [req.params.username]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: "Student not found" });
+    res.json(rows[0]);
   } catch (err) {
-    console.error("❌ Fetch students error:", err);
-    res.status(500).json({ error: "Failed to fetch students" });
+    res.status(500).json({ error: "Database error" });
   }
 });
 
-// --- Start server ---
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
